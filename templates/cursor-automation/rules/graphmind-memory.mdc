@@ -1,0 +1,40 @@
+---
+description: Автоматизация памяти GraphMind через MCP graphmind
+alwaysApply: true
+---
+
+# GraphMind — память между сессиями
+
+Cursor/Kodik не помнит прошлые чаты. Память — только через MCP **graphmind**.
+
+Справочник инструментов: `docs/TOOLS.md`
+
+## Старт (до основной работы)
+
+```
+bootstrap_memory({ cwd: "<PROJECT_ROOT>", query: "<суть задачи>", depth: 1 })
+```
+
+`cwd` — абсолютный путь **хоста**. Не пропускай.
+
+## В процессе — workspace
+
+- `record_action({ summary })` после значимых шагов (≤200 символов).
+- Hook `postToolUse`: напоминание после 2+ правок (throttle ~45 с).
+- Факт этого репо: `propose_new_memory({ level: "L2", node_type: "atom", content })`.
+
+## Кросс-проектная память (`scope: "global"`)
+
+```
+propose_new_memory({ level: "L2", node_type: "atom", scope: "global", content: "# ..." })
+```
+
+| `scope: "global"` | workspace |
+|-----|-----------|
+| Hooks, MCP, Docker, CI, конвенции | Код и факты только этого приложения |
+
+## Конец сессии
+
+```
+flush_session_memory({ summary: "итог сессии" })
+```

@@ -1,0 +1,88 @@
+[package]
+name = "graphmind-v2"
+version = "0.1.0"
+edition = "2021"
+
+[build-dependencies]
+tonic-build = "0.12"
+
+[dependencies]
+
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+
+# gRPC
+tonic = "0.12"
+prost = "0.13"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Error handling
+thiserror = "2"
+anyhow = "1"
+
+
+# UUID
+uuid = { version = "1", features = ["v4", "serde"] }
+
+# Async traits for Actor
+async-trait = "0.1"
+
+# File watching + async fs
+notify = "8"
+
+# File locking (cross-platform)
+fs2 = "0.4"
+
+# Directory traversal for FileBackend
+walkdir = "2"
+
+# Check if stdin is a pipe (for MCP auto-detection)
+atty = "0.2"
+
+# Date/time
+chrono = { version = "0.4", features = ["serde"] }
+
+# RocksDB (optional, behind feature flag)
+rocksdb = { version = "0.22", optional = true }
+
+# usearch (vector search)
+usearch = "0.5"
+
+# HTTP client for LLM API calls
+reqwest = { version = "0.11", features = ["json"] }
+
+# .env loader for LLM_BASE_URL / LLM_API_KEY / LLM_MODEL and other env vars
+# без явной загрузки MCP-сервер запускается Kodik'ом без .env, и OrchestratorActor
+# не получает LLM-конфиг, что приводит к silent-fallback на эвристические описания.
+dotenvy = "0.15"
+
+# Web UI server (локальный мониторинг + работа с памятью через браузер)
+axum = { version = "0.7", features = ["ws"] }
+tower-http = { version = "0.5", features = ["cors"] }
+rust-embed = "8"
+futures-util = { version = "0.3", default-features = false, features = ["std"] }
+
+
+[dev-dependencies]
+tokio-test = "0.4"
+tempfile = "3"
+
+
+[features]
+default = ["mcp-server"]
+rocksdb = ["dep:rocksdb"]
+mcp-server = []
+
+
+[[bin]]
+name = "graphmind-v2"
+path = "src/main.rs"

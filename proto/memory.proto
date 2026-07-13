@@ -1,0 +1,722 @@
+syntax = "proto3";
+
+package graphmind;
+
+// ==================== Basic Types ====================
+
+message Node {
+  string id = 1;
+  string node_type = 2;  // atom, cause, effect, rule, cluster, hub, domain
+  string content = 3;
+  string level = 4;      // L2, L1, L0, GKL
+  string scope = 5;      // workspace, global
+  string status = 6;     // active, draft, archived
+  repeated string tags = 7;
+  string summary = 8;
+  string parent_id = 9;
+  CausalData causal = 10;
+  int64 created_at = 11;
+  int64 updated_at = 12;
+}
+
+message CausalData {
+  string source = 1;              // observed, derived, hypothesized
+  float confidence = 2;           // 0.0-1.0
+  string what_happened = 3;       // cause
+  string mechanism = 4;           // cause
+  repeated string trigger_conditions = 5;  // cause
+  string symptom = 6;             // effect
+  repeated string if_conditions = 7;       // rule
+  string then_effect = 8;         // rule
+}
+
+message ExpectedEffect {
+  string symptom = 1;
+  float confidence = 2;
+  string observed_in = 3;
+}
+
+message CausalContext {
+  repeated ExpectedEffect expected_effects = 1;
+  repeated string anticipated_causes = 2;
+  string chain_snapshot = 3;
+}
+
+message Edge {
+  string source_id = 1;
+  string target_id = 2;
+  string relation = 3;  // related_to, depends_on, leads_to, etc.
+  string source_scope = 4;
+  string target_scope = 5;
+}
+
+message Workspace {
+  string id = 1;
+  string name = 2;
+  string path = 3;
+  string status = 4;  // active, archived
+  int64 created_at = 5;
+}
+
+message Action {
+  string id = 1;
+  string summary = 2;
+  string raw_text = 3;
+  repeated string related_nodes = 4;
+  CausalContext causal_context = 5;
+  int64 timestamp = 6;
+}
+
+// ==================== Service Definition ====================
+
+service MemoryService {
+  // Session Tools (S0)
+  rpc RecordAction(RecordActionRequest) returns (RecordActionResponse);
+  rpc GetS0Context(GetS0ContextRequest) returns (GetS0ContextResponse);
+  rpc FlushSessionMemory(FlushSessionMemoryRequest) returns (FlushSessionMemoryResponse);
+
+  // Storage Tools (L2/L1/L0)
+  rpc ProposeNewMemory(ProposeNewMemoryRequest) returns (ProposeNewMemoryResponse);
+  rpc UpdateNode(UpdateNodeRequest) returns (UpdateNodeResponse);
+  rpc FetchL2Atoms(FetchL2AtomsRequest) returns (FetchL2AtomsResponse);
+  rpc ArchiveNode(ArchiveNodeRequest) returns (ArchiveNodeResponse);
+  rpc RestoreNode(RestoreNodeRequest) returns (RestoreNodeResponse);
+  rpc SearchNodes(SearchNodesRequest) returns (SearchNodesResponse);
+
+  // Causal Reasoning Tools
+  rpc GetChain(GetChainRequest) returns (GetChainResponse);
+  rpc LinkNodes(LinkNodesRequest) returns (LinkNodesResponse);
+  rpc ProposeCausalLink(ProposeCausalLinkRequest) returns (ProposeCausalLinkResponse);
+  rpc FindContradictions(FindContradictionsRequest) returns (FindContradictionsResponse);
+  rpc PredictRisks(PredictRisksRequest) returns (PredictRisksResponse);
+  rpc DreamReflection(DreamReflectionRequest) returns (DreamReflectionResponse);
+
+  // Vector Search Tools
+  rpc VectorSearch(VectorSearchRequest) returns (VectorSearchResponse);
+  rpc MemoryQuery(MemoryQueryRequest) returns (MemoryQueryResponse);
+  rpc SuggestRelated(SuggestRelatedRequest) returns (SuggestRelatedResponse);
+
+  // Workspace Management Tools
+  rpc DetectWorkspaceFromContext(DetectWorkspaceFromContextRequest) returns (DetectWorkspaceFromContextResponse);
+  rpc CreateWorkspace(CreateWorkspaceRequest) returns (CreateWorkspaceResponse);
+  rpc SwitchWorkspace(SwitchWorkspaceRequest) returns (SwitchWorkspaceResponse);
+  rpc ListWorkspaces(ListWorkspacesRequest) returns (ListWorkspacesResponse);
+  rpc ArchiveWorkspace(ArchiveWorkspaceRequest) returns (ArchiveWorkspaceResponse);
+
+  // Cross-Workspace Tools
+  rpc FetchFromWorkspace(FetchFromWorkspaceRequest) returns (FetchFromWorkspaceResponse);
+  rpc SuggestCrossWorkspaceLinks(SuggestCrossWorkspaceLinksRequest) returns (SuggestCrossWorkspaceLinksResponse);
+  rpc FindWorkspaceOverlaps(FindWorkspaceOverlapsRequest) returns (FindWorkspaceOverlapsResponse);
+
+  // Memory Lifecycle Tools
+  rpc ConsolidateWorkspace(ConsolidateWorkspaceRequest) returns (ConsolidateWorkspaceResponse);
+  rpc SearchL0Clusters(SearchL0ClustersRequest) returns (SearchL0ClustersResponse);
+  rpc RouteL1(RouteL1Request) returns (RouteL1Response);
+
+  // Admin / System Tools
+  rpc BootstrapMemory(BootstrapMemoryRequest) returns (BootstrapMemoryResponse);
+  rpc GetIndexStatus(GetIndexStatusRequest) returns (GetIndexStatusResponse);
+
+  // Trust + Curiosity Tools
+  rpc VerifyInput(VerifyInputRequest) returns (VerifyInputResponse);
+  rpc GetIrritationReport(GetIrritationReportRequest) returns (GetIrritationReportResponse);
+  rpc ListCuriosityTasks(ListCuriosityTasksRequest) returns (ListCuriosityTasksResponse);
+  rpc CloseCuriosityTask(CloseCuriosityTaskRequest) returns (CloseCuriosityTaskResponse);
+  rpc GenerateVerificationQuestions(GenerateVerificationQuestionsRequest) returns (GenerateVerificationQuestionsResponse);
+  rpc CompareVerificationResponse(CompareVerificationResponseRequest) returns (CompareVerificationResponseResponse);
+  rpc FinalizeVerification(FinalizeVerificationRequest) returns (FinalizeVerificationResponse);
+}
+
+// ==================== Request/Response Messages ====================
+
+// --- Session Tools ---
+
+message RecordActionRequest {
+  string summary = 1;
+  string raw_text = 2;
+  repeated string related_nodes = 3;
+  CausalContext causal_context = 4;
+}
+
+message RecordActionResponse {
+  string id = 1;
+  bool consolidation_triggered = 2;
+}
+
+message GetS0ContextRequest {
+  int32 limit = 1;
+}
+
+message GetS0ContextResponse {
+  repeated Action actions = 1;
+}
+
+message FlushSessionMemoryRequest {
+  string summary = 1;
+  repeated string related_nodes = 2;
+  bool force = 3;
+}
+
+message FlushSessionMemoryResponse {
+  bool consolidated = 1;
+  int32 new_l2_count = 2;
+}
+
+// --- Storage Tools ---
+
+message ProposeNewMemoryRequest {
+  string level = 1;
+  string node_type = 2;
+  string content = 3;
+  string parent_id = 4;
+  CausalData causal = 5;
+  string scope = 6;
+  string status = 7;
+  repeated string tags = 8;
+  string id_hint = 9;
+}
+
+message ProposeNewMemoryResponse {
+  string node_id = 1;
+  string level = 2;
+}
+
+message UpdateNodeRequest {
+  string node_id = 1;
+  string scope = 2;
+  string content = 3;
+  string status = 4;
+  string summary = 5;
+}
+
+message UpdateNodeResponse {
+  bool updated = 1;
+}
+
+message FetchL2AtomsRequest {
+  repeated string atom_ids = 1;
+  string scope = 2;
+  string workspace_id = 3;
+}
+
+message FetchL2AtomsResponse {
+  repeated Node atoms = 1;
+}
+
+message ArchiveNodeRequest {
+  string node_id = 1;
+  string scope = 2;
+}
+
+message ArchiveNodeResponse {
+  bool archived = 1;
+}
+
+message RestoreNodeRequest {
+  string node_id = 1;
+  string scope = 2;
+}
+
+message RestoreNodeResponse {
+  bool restored = 1;
+}
+
+message SearchNodesRequest {
+  string query = 1;
+  SearchFilters filters = 2;
+  int32 limit = 3;
+}
+
+message SearchFilters {
+  string level = 1;
+  repeated string node_type = 2;
+  string status = 3;
+  repeated string tags = 4;
+  string workspace_id = 5;
+  DateRange date_range = 6;
+}
+
+message DateRange {
+  string from = 1;
+  string to = 2;
+}
+
+message SearchNodesResponse {
+  repeated Node results = 1;
+}
+
+// --- Causal Reasoning Tools ---
+
+message GetChainRequest {
+  ChainAnchor anchor = 1;
+  string direction = 2;  // backward, forward_pre, forward_post
+  int32 max_depth = 3;
+  string mode = 4;       // post_mortem
+  string scope = 5;
+}
+
+message ChainAnchor {
+  string type = 1;   // node, symptom
+  string id = 2;     // for type=node
+  string text = 3;   // for type=symptom
+}
+
+message GetChainResponse {
+  repeated ChainEntry entries = 1;
+}
+
+message ChainEntry {
+  Node node = 1;
+  string relation = 2;
+  float confidence = 3;
+}
+
+message LinkNodesRequest {
+  string source_id = 1;
+  string target_id = 2;
+  string relation = 3;
+  string source_scope = 4;
+  string target_scope = 5;
+  string target_workspace_id = 6;
+  string source_workspace_id = 7;
+}
+
+message LinkNodesResponse {
+  bool linked = 1;
+}
+
+message ProposeCausalLinkRequest {
+  string source_id = 1;
+  string target_id = 2;
+  string relation = 3;
+  string reasoning = 4;
+  float confidence = 5;
+}
+
+message ProposeCausalLinkResponse {
+  bool proposed = 1;
+  string proposed_edge_id = 2;
+}
+
+message FindContradictionsRequest {
+  string workspace_id = 1;
+}
+
+message FindContradictionsResponse {
+  repeated Contradiction contradictions = 1;
+}
+
+message Contradiction {
+  string source_id = 1;
+  string target_id = 2;
+  string conflict_type = 3;
+  float severity = 4;
+  string description = 5;
+}
+
+message PredictRisksRequest {
+  string cause_id = 1;
+  string scope = 2;
+}
+
+message PredictRisksResponse {
+  repeated RiskPrediction risks = 1;
+}
+
+message RiskPrediction {
+  string effect_id = 1;
+  string description = 2;
+  float probability = 3;
+  string severity = 4;  // low, medium, high, critical
+}
+
+message DreamReflectionRequest {
+  string workspace_id = 1;
+}
+
+message DreamReflectionResponse {
+  repeated DreamInsight insights = 1;
+}
+
+message DreamInsight {
+  string insight_type = 1;
+  string description = 2;
+  repeated string related_nodes = 3;
+  float confidence = 4;
+}
+
+// --- Vector Search Tools ---
+
+message VectorSearchRequest {
+  string query = 1;
+  SearchFilters filters = 2;
+  int32 top_k = 3;
+}
+
+message VectorSearchResponse {
+  repeated SearchResult results = 1;
+}
+
+message SearchResult {
+  Node node = 1;
+  float score = 2;
+  string match_type = 3;  // vector, keyword, hybrid
+}
+
+message MemoryQueryRequest {
+  string query = 1;
+  int32 depth = 2;  // 0, 1, 2
+  string scope = 3;
+}
+
+message MemoryQueryResponse {
+  repeated Node nodes = 1;
+  repeated Edge edges = 2;
+  string summary = 3;
+}
+
+message SuggestRelatedRequest {
+  string node_id = 1;
+  int32 limit = 2;
+}
+
+message SuggestRelatedResponse {
+  repeated RelatedNode suggestions = 1;
+}
+
+message RelatedNode {
+  string node_id = 1;
+  string summary = 2;
+  float similarity = 3;
+  string relation = 4;
+}
+
+// --- Workspace Management Tools ---
+
+message DetectWorkspaceFromContextRequest {
+  string cwd = 1;
+  string context_hint = 2;
+}
+
+message DetectWorkspaceFromContextResponse {
+  string workspace_id = 1;
+  string name = 2;
+  string path = 3;
+}
+
+message CreateWorkspaceRequest {
+  string name = 1;
+  string path = 2;
+  string description = 3;
+}
+
+message CreateWorkspaceResponse {
+  string workspace_id = 1;
+  string created_at = 2;
+}
+
+message SwitchWorkspaceRequest {
+  string workspace_id = 1;
+}
+
+message SwitchWorkspaceResponse {
+  bool switched = 1;
+  string previous_id = 2;
+}
+
+message ListWorkspacesRequest {
+  string status = 1;
+}
+
+message ListWorkspacesResponse {
+  repeated Workspace workspaces = 1;
+}
+
+message ArchiveWorkspaceRequest {
+  string workspace_id = 1;
+}
+
+message ArchiveWorkspaceResponse {
+  bool archived = 1;
+}
+
+// --- Cross-Workspace Tools ---
+
+message FetchFromWorkspaceRequest {
+  string workspace_id = 1;
+  string query = 2;
+  int32 depth = 3;
+}
+
+message FetchFromWorkspaceResponse {
+  repeated Node nodes = 1;
+  repeated Edge edges = 2;
+  string summary = 3;
+}
+
+message SuggestCrossWorkspaceLinksRequest {
+  string from_workspace_id = 1;
+  string to_workspace_id = 2;
+  float min_similarity = 3;
+  int32 top_k = 4;
+  repeated string levels = 5;
+  string relation = 6;
+}
+
+message SuggestCrossWorkspaceLinksResponse {
+  repeated CrossWorkspaceLink links = 1;
+}
+
+message CrossWorkspaceLink {
+  string source_id = 1;
+  string target_id = 2;
+  float similarity = 3;
+  string relation = 4;
+  string source_level = 5;
+  string target_level = 6;
+}
+
+message FindWorkspaceOverlapsRequest {
+  string from_workspace_id = 1;
+  string to_workspace_id = 2;
+}
+
+message FindWorkspaceOverlapsResponse {
+  repeated WorkspaceOverlap overlaps = 1;
+}
+
+message WorkspaceOverlap {
+  string node_id = 1;
+  string from_workspace = 2;
+  string to_workspace = 3;
+  float similarity = 4;
+  string description = 5;
+}
+
+// --- Memory Lifecycle Tools ---
+
+message ConsolidateWorkspaceRequest {
+  bool force = 1;
+}
+
+message ConsolidateWorkspaceResponse {
+  bool consolidated = 1;
+  int32 new_l2_count = 2;
+}
+
+message SearchL0ClustersRequest {
+  string query = 1;
+}
+
+message SearchL0ClustersResponse {
+  repeated L0Cluster clusters = 1;
+}
+
+message L0Cluster {
+  string id = 1;
+  string name = 2;
+  repeated string member_ids = 3;
+  float coherence = 4;
+}
+
+message RouteL1Request {
+  string hub_id = 1;
+  string query = 2;
+}
+
+message RouteL1Response {
+  repeated L1Domain domains = 1;
+}
+
+message L1Domain {
+  string id = 1;
+  string name = 2;
+  string hub_id = 3;
+  float relevance = 4;
+}
+
+// --- Admin / System Tools ---
+
+message BootstrapMemoryRequest {
+  string cwd = 1;
+  string query = 2;
+  int32 depth = 3;
+}
+
+message BootstrapMemoryResponse {
+  string workspace_id = 1;
+  string workspace_name = 2;
+  repeated Node recent_nodes = 3;
+  repeated Action recent_actions = 4;
+}
+
+message GetIndexStatusRequest {}
+
+message GetIndexStatusResponse {
+  int32 indexed_nodes = 1;
+  string last_rebuild = 2;
+  int32 pending_sync = 3;
+  string vector_backend = 4;
+}
+
+// --- Trust + Curiosity Tools ---
+
+message VerifyInputRequest {
+  string source_id = 1;
+  string content = 2;
+  VerifyContext context = 3;
+}
+
+message VerifyContext {
+  string active_workspace = 1;
+  bool involves_sensitive_data = 2;
+  string protected_action = 3;
+}
+
+message VerifyInputResponse {
+  float trust_score = 1;
+  float firewall_confidence = 2;
+  string recommendation = 3;  // Accept, Verify, Block
+  SourceTrust source_trust = 4;
+  ConsistencyReport consistency = 5;
+  VerifiabilityReport verifiability = 6;
+  IntentProfile intent = 7;
+  ToneAnomalyReport tone_anomaly = 8;
+  ActionAnalysis action_analysis = 9;
+  repeated TrustAlternative alternative_explanations = 10;
+  repeated string warnings = 11;
+}
+
+message SourceTrust {
+  string source_id = 1;
+  float trust_score = 2;
+  string category = 3;  // user, agent, external
+  int32 historical_accuracy = 4;
+}
+
+message ConsistencyReport {
+  float consistency_score = 1;
+  repeated string conflicting_nodes = 2;
+  string explanation = 3;
+}
+
+message VerifiabilityReport {
+  float verifiability_score = 1;
+  repeated string verification_sources = 2;
+  string explanation = 3;
+}
+
+message IntentProfile {
+  string intent_type = 1;
+  float confidence = 2;
+  repeated string signals = 3;
+}
+
+message ToneAnomalyReport {
+  float anomaly_score = 1;
+  string risk_level = 2;  // low, medium, high, critical
+  repeated string indicators = 3;
+}
+
+message ActionAnalysis {
+  string action_type = 1;
+  bool is_protected = 2;
+  repeated string required_verifications = 3;
+}
+
+message TrustAlternative {
+  string explanation = 1;
+  float plausibility = 2;
+}
+
+message GetIrritationReportRequest {
+  string workspace_id = 1;
+}
+
+message GetIrritationReportResponse {
+  float score = 1;
+  string emotional_state = 2;  // Settled, Curious, Restless, Urgent, Frustrated
+  string tone_hint = 3;
+  int32 open_tasks = 4;
+  int32 unresolved_contradictions = 5;
+  float avg_confidence = 6;
+  repeated CuriosityTask top_curiosity_tasks = 7;
+}
+
+message CuriosityTask {
+  string id = 1;
+  string title = 2;
+  string uncertainty_type = 3;
+  string priority = 4;  // Critical, High, Medium, Low
+  string status = 5;    // Open, Investigating, Resolved
+  string description = 6;
+  repeated string related_nodes = 7;
+}
+
+message ListCuriosityTasksRequest {
+  string status = 1;
+  string priority = 2;
+  string uncertainty_type = 3;
+  int32 limit = 4;
+}
+
+message ListCuriosityTasksResponse {
+  repeated CuriosityTask tasks = 1;
+}
+
+message CloseCuriosityTaskRequest {
+  string task_id = 1;
+  string resolution_note = 2;
+  repeated string supporting_nodes = 3;
+}
+
+message CloseCuriosityTaskResponse {
+  bool closed = 1;
+  string closure_warning = 2;
+}
+
+message GenerateVerificationQuestionsRequest {
+  string user_id = 1;
+  int32 count = 2;
+  string scenario_hint = 3;
+}
+
+message GenerateVerificationQuestionsResponse {
+  repeated VerificationQuestion questions = 1;
+}
+
+message VerificationQuestion {
+  string question_id = 1;
+  string situation = 2;
+  Prediction prediction = 3;  // Hidden from user
+}
+
+message Prediction {
+  string response_type = 1;
+  string emotional_tone = 2;
+  string reasoning_chain = 3;
+  float confidence = 4;
+}
+
+message CompareVerificationResponseRequest {
+  string question_id = 1;
+  string actual_response = 2;
+}
+
+message CompareVerificationResponseResponse {
+  float causal_match_score = 1;
+  string anomaly_explanation = 2;
+}
+
+message FinalizeVerificationRequest {
+  string user_id = 1;
+  repeated string question_ids = 2;
+  repeated string actual_responses = 3;
+}
+
+message FinalizeVerificationResponse {
+  bool is_authentic = 1;
+  float match_score = 2;
+  repeated string anomalies = 3;
+  string recommendation = 4;  // Accept, RequireAdditionalVerification, BlockAndAlert
+}

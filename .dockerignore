@@ -1,0 +1,13 @@
+# Keep the Docker build context small and secret-free
+target
+target2
+data
+graphmind-data
+.env
+.env.*
+*.log
+*_out*.txt
+stderr_diag.txt
+__pycache__
+.git
+.DS_Store

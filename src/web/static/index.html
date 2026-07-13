@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GraphMind v2 — UI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif}
+button{color:#c9d1d9;background:#21262d;border:1px solid #30363d}
+option{background:#0d1117;color:#c9d1d9}
+body{background:#0d1117;color:#c9d1d9;font-size:14px}
+/* Header level 1 */
+.h1{display:flex;align-items:center;gap:12px;padding:8px 16px;background:#161b22;border-bottom:1px solid #30363d}
+.h1 .logo{font-size:18px;font-weight:700;color:#58a6ff}
+.h1 .ver{font-size:12px;color:#8b949e}
+.h1 .ws-status{font-size:12px;padding:2px 8px;border-radius:4px;background:#1f6f3b;color:#fff;margin-left:8px}
+.h1 .ws-status.off{background:#da3633}
+.h1 .spacer{flex:1}
+.h1 .demo-label{font-size:13px;color:#8b949e;font-style:italic;letter-spacing:.5px}
+.h1 .btn{padding:4px 12px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#c9d1d9;cursor:pointer;font-size:13px;text-decoration:none;display:inline-block}
+.h1 .btn:hover{background:#30363d}
+/* Header level 2 */
+.h2{display:flex;align-items:center;gap:16px;padding:6px 16px;background:#161b22;border-bottom:1px solid #30363d;flex-wrap:wrap}
+.h2 select{background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:4px;padding:3px 8px;font-size:13px}
+.h2 .stat{font-size:13px;color:#8b949e}
+.h2 .stat b{color:#58a6ff}
+/* Tabs */
+.tabs{display:flex;gap:0;background:#161b22;border-bottom:1px solid #30363d;padding:0 16px}
+.tabs button{padding:8px 16px;background:none;border:none;border-bottom:2px solid transparent;color:#8b949e;cursor:pointer;font-size:14px}
+.tabs button:hover{color:#c9d1d9}
+.tabs button.active{color:#58a6ff;border-bottom-color:#58a6ff}
+/* Content */
+.content{padding:16px;max-width:1400px;margin:0 auto}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+/* Cards */
+.card{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;margin-bottom:12px}
+.card h3{font-size:15px;margin-bottom:8px;color:#58a6ff}
+/* Dashboard grid */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.dash-item{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:12px;text-align:center}
+.dash-item .val{font-size:28px;font-weight:700;color:#58a6ff}
+.dash-item .lbl{font-size:12px;color:#8b949e;margin-top:4px}
+/* Table */
+table{width:100%;border-collapse:collapse}
+th,td{padding:6px 10px;text-align:left;border-bottom:1px solid #21262d}
+th{color:#8b949e;font-size:12px;text-transform:uppercase}
+tr:hover{background:#161b22}
+/* Badges */
+.badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600}
+.badge-l0{background:#1f6f3b;color:#fff}
+.badge-l1{background:#1f6feb;color:#fff}
+.badge-l2{background:#8957e5;color:#fff}
+.badge-gkl{background:#da3633;color:#fff}
+.badge-atom{background:#30363d;color:#c9d1d9}
+.badge-cause{background:#db6d28;color:#fff}
+.badge-effect{background:#f0883e;color:#fff}
+.badge-rule{background:#a371f7;color:#fff}
+.badge-hub{background:#2ea04f;color:#fff}
+.badge-cluster{background:#1f6feb;color:#fff}
+.badge-domain{background:#8957e5;color:#fff}
+/* Plan tree */
+.plan-tree{margin-top:8px}
+.plan-node{margin-left:20px;border-left:1px solid #30363d;padding-left:12px;margin-bottom:4px}
+.plan-row{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:4px;cursor:pointer}
+.plan-row:hover{background:#21262d}
+.plan-row .toggle{cursor:pointer;font-size:12px;color:#8b949e;width:16px}
+.plan-row .lvl{font-size:11px;font-weight:700;padding:1px 4px;border-radius:3px}
+.plan-row .lvl.p0{background:#da3633;color:#fff}
+.plan-row .lvl.p1{background:#db6d28;color:#fff}
+.plan-row .lvl.p2{background:#1f6feb;color:#fff}
+.plan-row .lvl.p3{background:#8957e5;color:#fff}
+.plan-row .st{font-size:11px;padding:1px 6px;border-radius:3px;background:#30363d}
+.plan-row .st.created{background:#30363d;color:#8b949e}
+.plan-row .st.in_progress{background:#1f6feb;color:#fff}
+.plan-row .st.pending_review{background:#db6d28;color:#fff}
+.plan-row .st.approved{background:#1f6f3b;color:#fff}
+.plan-row .st.rejected{background:#da3633;color:#fff}
+.plan-row .st.problem{background:#da3633;color:#fff}
+.plan-row .st.done{background:#2ea04f;color:#fff}
+.plan-row .st.archived{background:#30363d;color:#8b949e}
+.plan-row .desc{flex:1;font-size:13px;color:#c9d1d9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plan-row .act{font-size:12px;padding:2px 6px;border-radius:4px;border:1px solid #30363d;background:#21262d;cursor:pointer;color:#fff}
+.plan-row .act:hover{background:#30363d;color:#c9d1d9}
+.plan-children{display:none}
+.plan-children.open{display:block}
+/* Chat */
+.chat-box{display:flex;flex-direction:column;height:calc(100vh - 200px);border:1px solid #30363d;border-radius:8px;overflow:hidden}
+.chat-msgs{flex:1;overflow-y:auto;padding:12px}
+.chat-msg{margin-bottom:10px;max-width:80%}
+.chat-msg.user{text-align:right;margin-left:20%}
+.chat-msg .bubble{display:inline-block;padding:8px 12px;border-radius:12px;font-size:14px;white-space:pre-wrap;word-wrap:break-word}
+.chat-msg.user .bubble{background:#1f6feb;color:#fff}
+.chat-msg.assistant .bubble{background:#21262d;color:#c9d1d9;border:1px solid #30363d}
+.chat-msg .meta{font-size:11px;color:#8b949e;margin-top:2px}
+.chat-input{display:flex;gap:8px;padding:8px;border-top:1px solid #30363d;background:#161b22}
+.chat-input textarea{flex:1;background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:8px;font-size:14px;resize:none;height:60px}
+.chat-input button{padding:8px 20px;border-radius:6px;border:none;background:#1f6feb;color:#fff;cursor:pointer;font-size:14px}
+.chat-input button:disabled{opacity:.5;cursor:default}
+/* Modal */
+.modal-bg{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:100}
+.modal-bg.open{display:flex}
+.modal{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:20px;width:600px;max-width:90vw;max-height:80vh;overflow-y:auto}
+.modal h3{color:#58a6ff;margin-bottom:12px}
+.modal label{display:block;font-size:12px;color:#8b949e;margin:8px 0 4px}
+.modal textarea{width:100%;background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:8px;font-size:14px;min-height:80px}
+.modal select{width:100%;background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:6px;font-size:14px}
+.modal .actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+.modal .actions button{padding:6px 16px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#c9d1d9;cursor:pointer}
+.modal .actions button.primary{background:#1f6feb;color:#fff;border:none}
+.modal .actions button:hover{opacity:.8}
+/* Settings */
+.settings-section{margin-bottom:16px}
+.settings-section h3{color:#58a6ff;font-size:14px;margin-bottom:8px;border-bottom:1px solid #30363d;padding-bottom:4px}
+.settings-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.settings-row label{width:180px;font-size:13px;color:#8b949e}
+.settings-row input,.settings-row select{flex:1;background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:4px;padding:4px 8px;font-size:13px}
+.settings-row input[type=checkbox]{width:auto}
+.settings-save{margin-top:12px;padding:8px 24px;border-radius:6px;border:none;background:#1f6feb;color:#fff;cursor:pointer;font-size:14px}
+.settings-save:hover{opacity:.8}
+/* Node detail */
+.node-detail{font-size:13px;line-height:1.6}
+.node-detail .field{margin-bottom:4px}
+.node-detail .field b{color:#8b949e;display:inline-block;width:100px}
+/* Misc */
+.loading{color:#8b949e;font-style:italic}
+.error{color:#f85149}
+.clickable{cursor:pointer;color:#58a6ff;text-decoration:underline}
+</style>
+</head>
+<body>
+
+<!-- Header level 1 -->
+<div class="h1">
+  <span class="logo">GraphMind v2</span>
+  <span class="ver">UI v0.3.0</span>
+  <span class="ws-status" id="wsStatus">подключение...</span>
+  <span class="spacer"></span>
+  <span class="demo-label">функциональный — демо</span>
+  <span class="spacer"></span>
+  <a class="btn" href="https://gm.bcode.guru/" target="_blank">Сайт</a>
+</div>
+
+<!-- Header level 2 -->
+<div class="h2">
+  <select id="wsSelect" onchange="switchWorkspace()"></select>
+  <span class="stat">L2 узлов: <b id="cntL2">—</b></span>
+  <span class="stat">L1 узлов: <b id="cntL1">—</b></span>
+  <span class="stat">L0 хабов: <b id="cntL0hub">—</b></span>
+  <span class="stat">L0 кластеров: <b id="cntL0cl">—</b></span>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="active" onclick="showTab('dashboard',this)">Дашборд</button>
+  <button onclick="showTab('nodes',this)">Узлы</button>
+  <button onclick="showTab('think',this)">Мыслительная</button>
+  <button onclick="showTab('plans',this)">Планы</button>
+  <button onclick="showTab('docs',this)">Документация</button>
+  <button onclick="showTab('connections',this)">Подключения</button>
+  <button onclick="showTab('settings',this)">Настройки</button>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+<!-- Dashboard -->
+<div class="tab-pane active" id="tab-dashboard">
+  <div class="dash-grid" id="dashGrid"><span class="loading">Загрузка...</span></div>
+  <div class="card" style="margin-top:12px"><h3>Последние S0 записи</h3><div id="s0List" class="loading">Загрузка...</div></div>
+</div>
+
+<!-- Nodes -->
+<div class="tab-pane" id="tab-nodes">
+  <div class="card">
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+      <input id="searchQ" placeholder="Поиск..." style="flex:1;background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:4px;padding:4px 8px" onkeydown="if(event.key==='Enter')searchNodes()">
+      <select id="levelFilter" onchange="loadNodes()" style="background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:4px;padding:4px 8px">
+        <option value="">Все уровни</option><option value="L0">L0</option><option value="L1">L1</option><option value="L2">L2</option><option value="GKL">GKL</option>
+      </select>
+      <button class="h1 btn" onclick="searchNodes()">Найти</button>
+      <button class="h1 btn" onclick="loadNodes()">Все</button>
+    </div>
+    <div id="nodesList" style="max-height:calc(100vh - 320px);overflow-y:auto"></div>
+  </div>
+</div>
+
+<!-- Think (Chat) -->
+<div class="tab-pane" id="tab-think">
+  <div class="chat-box">
+    <div class="chat-msgs" id="chatMsgs"></div>
+    <div class="chat-input">
+      <textarea id="chatInput" placeholder="Спросите агента памяти..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
+      <button id="chatSend" onclick="sendChat()">Отправить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Plans -->
+<div class="tab-pane" id="tab-plans">
+  <div class="card">
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="h1 btn" onclick="createP0()">+ P0</button>
+      <button class="h1 btn" onclick="loadPlans()">Обновить</button>
+      <select id="planStatusFilter" onchange="loadPlans()" style="background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:4px;padding:4px 8px">
+        <option value="">Все статусы</option><option value="created">created</option><option value="in_progress">in_progress</option><option value="pending_review">pending_review</option><option value="approved">approved</option><option value="rejected">rejected</option><option value="problem">problem</option><option value="done">done</option><option value="archived">archived</option>
+      </select>
+    </div>
+    <div class="plan-tree" id="planTree"><span class="loading">Загрузка...</span></div>
+  </div>
+</div>
+
+<!-- Documentation -->
+<div class="tab-pane" id="tab-docs">
+  <div class="card">
+    <h3>GraphMind v2 — Документация</h3>
+    <p style="color:#8b949e;margin-bottom:12px">Описание протестированных компонентов и инструментов, доступных через MCP и Web UI.</p>
+
+    <h3 style="margin-top:16px">MCP-инструменты (протестированы)</h3>
+    <table>
+      <thead><tr><th>Инструмент</th><th>Назначение</th><th>Статус</th></tr></thead>
+      <tbody>
+        <tr><td><code>record_action</code></td><td>Запись действия в S0 (кратковременная память)</td><td>✅ работает</td></tr>
+        <tr><td><code>get_s0_context</code></td><td>Получение последних S0-записей</td><td>✅ работает</td></tr>
+        <tr><td><code>flush_session_memory</code></td><td>Завершение сессии: snapshot S0 → L2</td><td>✅ работает</td></tr>
+        <tr><td><code>propose_new_memory</code></td><td>Создание нового L2-узла (atom/cause/effect/rule)</td><td>✅ работает</td></tr>
+        <tr><td><code>update_node</code></td><td>Обновление содержимого узла</td><td>✅ работает</td></tr>
+        <tr><td><code>fetch_l2_atoms</code></td><td>Получение полных текстов узлов по atom_ids</td><td>✅ работает</td></tr>
+        <tr><td><code>list_memory</code></td><td>Список всех L2-узлов</td><td>✅ работает</td></tr>
+        <tr><td><code>search_nodes</code></td><td>Keyword-поиск по узлам</td><td>✅ работает</td></tr>
+        <tr><td><code>vector_search</code></td><td>Векторный (char-bag) поиск</td><td>✅ работает</td></tr>
+        <tr><td><code>suggest_related</code></td><td>BFS по рёбрам: ближайшие соседи</td><td>✅ работает</td></tr>
+        <tr><td><code>memory_query</code></td><td>Поиск по памяти (keyword + depth)</td><td>✅ работает</td></tr>
+        <tr><td><code>link_nodes</code></td><td>Создание ребра между узлами</td><td>✅ работает</td></tr>
+        <tr><td><code>list_edges</code></td><td>Поиск рёбер по from_id/to_id</td><td>✅ работает</td></tr>
+        <tr><td><code>unlink_edge</code></td><td>Удаление ребра по edge_id</td><td>✅ работает</td></tr>
+        <tr><td><code>archive_node</code> / <code>restore_node</code></td><td>Архивирование/восстановление узла</td><td>✅ работает</td></tr>
+        <tr><td><code>get_chain</code></td><td>Обход причинной цепочки (backward/forward)</td><td>✅ работает</td></tr>
+        <tr><td><code>predict_risks</code></td><td>Прогноз рисков от узла-причины</td><td>✅ работает</td></tr>
+        <tr><td><code>find_contradictions</code></td><td>Поиск противоречий в графе</td><td>✅ работает</td></tr>
+        <tr><td><code>get_irritation_report</code></td><td>Отчёт о неопределённостях графа</td><td>✅ работает</td></tr>
+        <tr><td><code>dream_reflection</code></td><td>Поиск повторяющихся паттернов → правила IF/THEN</td><td>✅ работает</td></tr>
+        <tr><td><code>propose_causal_link</code></td><td>Предложение причинной связи (LLM)</td><td>✅ работает</td></tr>
+        <tr><td><code>verify_input</code></td><td>Верификация входа (TrustFirewall)</td><td>✅ работает</td></tr>
+        <tr><td><code>list_curiosity_tasks</code> / <code>close_curiosity_task</code></td><td>Задачи-исследования по неопределённостям</td><td>✅ работает</td></tr>
+        <tr><td><code>list_workspaces</code> / <code>create_workspace</code> / <code>switch_workspace</code> / <code>archive_workspace</code></td><td>Управление workspace</td><td>✅ работает</td></tr>
+        <tr><td><code>fetch_from_workspace</code> / <code>find_workspace_overlaps</code> / <code>suggest_cross_workspace_links</code></td><td>Кросс-workspace операции</td><td>✅ работает</td></tr>
+        <tr><td><code>bootstrap_memory</code></td><td>Автоподстройка памяти (detect + query + context)</td><td>✅ работает</td></tr>
+        <tr><td><code>consolidate_workspace</code></td><td>drain queue → L2 → L1 → L0 (full pipeline)</td><td>✅ работает</td></tr>
+        <tr><td><code>orchestrator_status</code></td><td>Диагностика координатора памяти</td><td>✅ работает</td></tr>
+        <tr><td><code>plan_create_p0</code> / <code>plan_propose_p1</code> / <code>plan_approve_p1</code> / <code>plan_reject_p1</code></td><td>Создание и ревью планов</td><td>✅ работает</td></tr>
+        <tr><td><code>plan_decompose</code> / <code>plan_claim</code> / <code>plan_complete</code></td><td>Декомпозиция и выполнение P3</td><td>✅ работает</td></tr>
+        <tr><td><code>plan_set_problem</code> / <code>plan_resolve_problem</code></td><td>Управление проблемами планов</td><td>✅ работает</td></tr>
+        <tr><td><code>plan_status</code> / <code>plan_delete</code> / <code>plan_archive</code></td><td>Статус, удаление, архивация планов</td><td>✅ работает</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:16px">Акторы (протестированы)</h3>
+    <table>
+      <thead><tr><th>Актор</th><th>Назначение</th><th>Статус</th></tr></thead>
+      <tbody>
+        <tr><td><code>S0Actor</code></td><td>Кратковременная память (session actions)</td><td>✅ работает</td></tr>
+        <tr><td><code>L2Actor</code></td><td>Узлы памяти (atom/cause/effect/rule), рёбра</td><td>✅ работает</td></tr>
+        <tr><td><code>L1Actor</code></td><td>Домены (группировка L2-узлов)</td><td>✅ работает</td></tr>
+        <tr><td><code>L0Actor</code></td><td>Хабы и кластеры (верхний уровень)</td><td>✅ работает</td></tr>
+        <tr><td><code>GKLactor</code></td><td>Глобальные знания (кросс-workspace)</td><td>✅ работает</td></tr>
+        <tr><td><code>SearchActor</code></td><td>Keyword + vector search</td><td>✅ работает</td></tr>
+        <tr><td><code>ChainActor</code></td><td>Обход причинных цепочек (BFS)</td><td>✅ работает</td></tr>
+        <tr><td><code>CausalEngine</code></td><td>Поиск противоречий, паттернов</td><td>✅ работает</td></tr>
+        <tr><td><code>InferenceActor</code></td><td>Прогноз рисков (forward_pre)</td><td>✅ работает</td></tr>
+        <tr><td><code>WorkspaceManager</code></td><td>Управление workspace</td><td>✅ работает</td></tr>
+        <tr><td><code>PlanActor</code></td><td>Иерархия планов P0→P3</td><td>✅ работает</td></tr>
+        <tr><td><code>CuriosityEngine</code></td><td>Задачи-исследования</td><td>✅ работает</td></tr>
+        <tr><td><code>TrustFirewall</code></td><td>Верификация входа</td><td>✅ работает</td></tr>
+        <tr><td><code>LlmClient</code></td><td>Клиент к OpenAI-совместимому LLM</td><td>✅ работает</td></tr>
+        <tr><td><code>EmbeddingProvider</code></td><td>Векторные embeddings (V2.1)</td><td>⚠️ skeleton</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:16px">Web UI (протестировано)</h3>
+    <table>
+      <thead><tr><th>Компонент</th><th>Назначение</th><th>Статус</th></tr></thead>
+      <tbody>
+        <tr><td>Дашборд</td><td>Uptime, L2/S0 counts, workspaces</td><td>✅ работает</td></tr>
+        <tr><td>Узлы</td><td>Просмотр, поиск, фильтр по уровню</td><td>✅ работает</td></tr>
+        <tr><td>Мыслительная (чат)</td><td>Чат с LLM-агентом памяти</td><td>✅ работает</td></tr>
+        <tr><td>Планы</td><td>Дерево P0→P3, редактирование, статусы</td><td>✅ работает</td></tr>
+        <tr><td>Настройки</td><td>LLM, embeddings, сервер, память</td><td>✅ работает</td></tr>
+        <tr><td>Подключения</td><td>Транспорт, workspaces</td><td>✅ работает</td></tr>
+        <tr><td>WebSocket</td><td>Real-time обновления, auto-reconnect</td><td>✅ работает</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:16px">Транспорт</h3>
+    <table>
+      <thead><tr><th>Режим</th><th>Назначение</th><th>Статус</th></tr></thead>
+      <tbody>
+        <tr><td>stdio</td><td>MCP через stdin/stdout (локальный запуск)</td><td>✅ работает</td></tr>
+        <tr><td>HTTP (streamable)</td><td>MCP через HTTP+SSE (контейнер)</td><td>✅ работает</td></tr>
+        <tr><td>Docker</td><td>Контейнер с MCP + Web UI</td><td>✅ работает</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Connections -->
+<div class="tab-pane" id="tab-connections">
+  <div class="card"><h3>Активные подключения</h3><div id="connInfo" class="loading">Загрузка...</div></div>
+  <div class="card"><h3>Workspaces</h3><div id="wsList"></div></div>
+</div>
+
+<!-- Settings -->
+<div class="tab-pane" id="tab-settings">
+  <div class="card" id="settingsCard"><span class="loading">Загрузка настроек...</span></div>
+</div>
+
+</div><!-- /content -->
+
+<!-- Modal: Node detail -->
+<div class="modal-bg" id="nodeModal">
+  <div class="modal">
+    <h3>Детали узла</h3>
+    <div class="node-detail" id="nodeDetail"></div>
+    <div class="actions">
+      <button onclick="loadChain('backward')">Причины</button>
+      <button onclick="loadChain('forward_pre')">Следствия</button>
+      <button onclick="loadRisks()">Риски</button>
+      <button class="primary" onclick="closeModal('nodeModal')">Закрыть</button>
+    </div>
+    <div id="chainResult" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<!-- Modal: Plan edit -->
+<div class="modal-bg" id="planModal">
+  <div class="modal">
+    <h3 id="planModalTitle">Редактирование плана</h3>
+    <label>Описание:</label>
+    <textarea id="planEditDesc"></textarea>
+    <label>Статус:</label>
+    <select id="planEditStatus">
+      <option value="created">created</option><option value="in_progress">in_progress</option><option value="pending_review">pending_review</option><option value="approved">approved</option><option value="rejected">rejected</option><option value="problem">problem</option><option value="done">done</option><option value="archived">archived</option>
+    </select>
+    <div class="actions">
+      <button onclick="closeModal('planModal')">Отмена</button>
+      <button class="primary" onclick="savePlan()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Create P0 -->
+<div class="modal-bg" id="createP0Modal">
+  <div class="modal">
+    <h3>Новый P0</h3>
+    <label>Описание:</label>
+    <textarea id="p0Desc"></textarea>
+    <div class="actions">
+      <button onclick="closeModal('createP0Modal')">Отмена</button>
+      <button class="primary" onclick="confirmCreateP0()">Создать</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// === WebSocket client ===
+let ws=null,wsConnected=false,reqId=0,pending=new Map(),currentNode=null,currentPlanId=null;
+const chatHistory=[];
+
+function connectWS(){
+  const proto=location.protocol==='https:'?'wss':'ws';
+  ws=new WebSocket(proto+'://'+location.host+'/ws');
+  ws.onopen=()=>{wsConnected=true;document.getElementById('wsStatus').textContent='онлайн';document.getElementById('wsStatus').classList.remove('off');loadAll();};
+  ws.onclose=()=>{wsConnected=false;document.getElementById('wsStatus').textContent='офлайн';document.getElementById('wsStatus').classList.add('off');setTimeout(connectWS,3000);};
+  ws.onerror=()=>{ws.close();};
+  ws.onmessage=(e)=>{try{const msg=JSON.parse(e.data);if(msg.id!=null&&pending.has(msg.id)){const{resolve}=pending.get(msg.id);pending.delete(msg.id);resolve(msg.result||msg.error);}}catch(err){console.error('WS parse error:',err);}};
+}
+
+function rpc(method,params={}){
+  return new Promise((resolve)=>{if(!wsConnected){resolve({error:'WS disconnected'});return;}const id=++reqId;pending.set(id,{resolve});ws.send(JSON.stringify({method,params,id}));
+    setTimeout(()=>{if(pending.has(id)){pending.delete(id);resolve({error:'timeout'});}},15000);});
+}
+
+function showTab(name,btn){document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+name).classList.add('active');btn.classList.add('active');
+  if(name==='dashboard')loadDashboard();if(name==='nodes')loadNodes();if(name==='plans')loadPlans();if(name==='connections')loadConnections();if(name==='settings')loadSettings();}
+
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+// === Dashboard ===
+async function loadDashboard(){const s=await rpc('status');const items=[{val:s.uptime_human||'—',lbl:'Uptime'},{val:s.l2_count??'—',lbl:'L2 узлов'},{val:s.s0_count??'—',lbl:'S0 записей'},{val:s.workspace_count??'—',lbl:'Workspaces'}];document.getElementById('dashGrid').innerHTML=items.map(i=>`<div class="dash-item"><div class="val">${i.val}</div><div class="lbl">${i.lbl}</div></div>`).join('');const s0=await rpc('s0');document.getElementById('s0List').innerHTML=s0.entries?s0.entries.map(e=>`<div style="padding:4px 0;border-bottom:1px solid #21262d"><span style="color:#8b949e;font-size:12px">${e.timestamp?e.timestamp.substring(11,19):''}</span> ${e.summary||''}</div>`).join(''):'';loadCounts();}
+
+async function loadCounts(){const nodes=await rpc('nodes.list',{limit:500});const all=nodes.nodes||[];const l2=all.filter(n=>n.level==='L2').length;const l1=all.filter(n=>n.level==='L1').length;const l0h=all.filter(n=>n.level==='L0'&&n.node_type==='Hub').length;const l0c=all.filter(n=>n.level==='L0'&&n.node_type==='Cluster').length;document.getElementById('cntL2').textContent=l2;document.getElementById('cntL1').textContent=l1;document.getElementById('cntL0hub').textContent=l0h;document.getElementById('cntL0cl').textContent=l0c;}
+
+// === Workspaces ===
+async function loadWorkspaces(){const r=await rpc('workspaces.list');const wsList=r.workspaces||[];const active=r.active||'';const sel=document.getElementById('wsSelect');sel.innerHTML=wsList.map(w=>`<option value="${w.id}"${w.id===active?' selected':''}>${w.name} (${w.node_count})</option>`).join('');}
+
+async function switchWorkspace(){const id=document.getElementById('wsSelect').value;if(id){await rpc('workspaces.archive',{id});loadAll();}}
+
+// === Nodes ===
+async function loadNodes(){const level=document.getElementById('levelFilter').value;const r=await rpc('nodes.list',{level:level||undefined,limit:200});const nodes=r.nodes||[];document.getElementById('nodesList').innerHTML=nodes.length?`<table><thead><tr><th>ID</th><th>Уровень</th><th>Тип</th><th>Контент</th><th>Статус</th></tr></thead><tbody>${nodes.map(n=>`<tr onclick="openNode('${n.id}')" style="cursor:pointer"><td style="font-family:monospace;font-size:11px">${n.id.substring(0,8)}</td><td><span class="badge badge-${n.level.toLowerCase()}">${n.level}</span></td><td><span class="badge badge-${n.node_type.toLowerCase()}">${n.node_type}</span></td><td style="max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n.content||''}</td><td>${n.status||''}</td></tr>`).join('')}</tbody></table>`:'<span class="loading">Нет узлов</span>';}
+
+async function searchNodes(){const q=document.getElementById('searchQ').value;const level=document.getElementById('levelFilter').value;const r=await rpc('nodes.search',{q,level:level||undefined,limit:50});const results=r.results||[];document.getElementById('nodesList').innerHTML=results.length?`<table><thead><tr><th>ID</th><th>Уровень</th><th>Тип</th><th>Контент</th><th>Score</th></tr></thead><tbody>${results.map(n=>`<tr onclick="openNode('${n.id}')" style="cursor:pointer"><td style="font-family:monospace;font-size:11px">${n.id.substring(0,8)}</td><td><span class="badge badge-${n.level.toLowerCase()}">${n.level}</span></td><td><span class="badge badge-${n.node_type.toLowerCase()}">${n.node_type}</span></td><td style="max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n.content||''}</td><td>${(n.score||0).toFixed(2)}</td></tr>`).join('')}</tbody></table>`:'<span class="loading">Не найдено</span>';}
+
+async function openNode(id){currentNode=id;const r=await rpc('nodes.list',{limit:500});const nodes=r.nodes||[];const n=nodes.find(x=>x.id===id);if(!n)return;document.getElementById('nodeDetail').innerHTML=`<div class="field"><b>ID:</b> ${n.id}</div><div class="field"><b>Уровень:</b> <span class="badge badge-${n.level.toLowerCase()}">${n.level}</span></div><div class="field"><b>Тип:</b> <span class="badge badge-${n.node_type.toLowerCase()}">${n.node_type}</span></div><div class="field"><b>Статус:</b> ${n.status||''}</div><div class="field"><b>Workspace:</b> ${n.workspace_id||''}</div><div class="field"><b>Контент:</b></div><div style="padding:8px;background:#0d1117;border-radius:6px;margin-top:4px">${n.content||''}</div><div class="field" style="margin-top:8px"><b>Теги:</b> ${(n.tags||[]).join(', ')||'—'}</div><div class="field"><b>Создан:</b> ${n.created_at||''}</div>`;document.getElementById('chainResult').innerHTML='';document.getElementById('nodeModal').classList.add('open');}
+
+async function loadChain(dir){if(!currentNode)return;const r=await rpc('chain.get',{id:currentNode,dir});if(r.error){document.getElementById('chainResult').innerHTML=`<p class="error">${r.error}</p>`;return;}const entries=r.entries||[];document.getElementById('chainResult').innerHTML=`<h4 style="color:#58a6ff;margin-bottom:6px">${dir==='backward'?'Причины':'Следствия'}</h4>${entries.map(e=>`<div style="padding:4px 8px;border-left:2px solid #30363d;margin-bottom:4px"><span style="color:#8b949e">depth ${e.depth}</span> <span style="font-family:monospace;font-size:12px">${e.node_id?e.node_id.substring(0,8):''}</span> ${e.relation?'('+e.relation+')':''}</div>`).join('')||'<span class="loading">Нет данных</span>'}`;}
+
+async function loadRisks(){if(!currentNode)return;const r=await rpc('risks.predict',{id:currentNode});if(r.error){document.getElementById('chainResult').innerHTML=`<p class="error">${r.error}</p>`;return;}document.getElementById('chainResult').innerHTML=`<h4 style="color:#58a6ff;margin-bottom:6px">Прогноз рисков</h4><pre style="background:#0d1117;padding:8px;border-radius:6px;overflow-x:auto;font-size:12px">${JSON.stringify(r,null,2)}</pre>`;}
+
+// === Chat (Think tab) ===
+async function sendChat(){const input=document.getElementById('chatInput');const msg=input.value.trim();if(!msg)return;input.value='';document.getElementById('chatSend').disabled=true;chatHistory.push({role:'user',content:msg});renderChat();const r=await rpc('chat.send',{message:msg});chatHistory.push({role:'assistant',content:r.reply||r.error||'Ошибка'});renderChat();document.getElementById('chatSend').disabled=false;}
+
+function renderChat(){const el=document.getElementById('chatMsgs');el.innerHTML=chatHistory.map(m=>`<div class="chat-msg ${m.role}"><div class="bubble">${m.content}</div><div class="meta">${m.role==='user'?'вы':'агент'}</div></div>`).join('');el.scrollTop=el.scrollHeight;}
+
+// === Plans ===
+let allPlans=[];
+async function loadPlans(){const status=document.getElementById('planStatusFilter').value;const r=await rpc('plans.list',{status:status||undefined});allPlans=r.plans||[];renderPlanTree();}
+
+function renderPlanTree(){const p0s=allPlans.filter(p=>p.level==='P0');const tree=document.getElementById('planTree');if(!p0s.length){tree.innerHTML='<span class="loading">Нет планов</span>';return;}
+  tree.innerHTML=p0s.map(p0=>renderPlanNode(p0,0)).join('');}
+
+function renderPlanNode(plan,depth){const children=allPlans.filter(p=>p.parent_id===plan.id);const hasChildren=children.length>0;const lvlClass=plan.level.toLowerCase();const stClass=(plan.status||'created').toLowerCase();const indent=depth*20;
+  return `<div class="plan-node" style="margin-left:${indent}px">
+    <div class="plan-row">
+      ${hasChildren?`<span class="toggle" onclick="this.parentElement.nextElementSibling.classList.toggle('open')">▶</span>`:'<span class="toggle">•</span>'}
+      <span class="lvl ${lvlClass}">${plan.level}</span>
+      <span class="st ${stClass}">${plan.status||''}</span>
+      <span class="desc">${plan.description||''}</span>
+      <span class="act" onclick="editPlan('${plan.id}')">✎</span>
+      ${plan.level==='P0'?`<span class="act" onclick="decomposePlan('${plan.id}')">⊕</span>`:''}
+      ${plan.level==='P1'?`<span class="act" onclick="approvePlan('${plan.id}')">✓</span>`:''}
+      ${plan.level==='P1'?`<span class="act" onclick="rejectPlan('${plan.id}')">✕</span>`:''}
+      <span class="act" onclick="archivePlan('${plan.id}')">📦</span>
+      <span class="act" onclick="deletePlan('${plan.id}')" style="color:#f85149">🗑</span>
+    </div>
+    ${hasChildren?`<div class="plan-children">${children.map(c=>renderPlanNode(c,depth+1)).join('')}</div>`:''}
+  </div>`;}
+
+function editPlan(id){currentPlanId=id;const plan=allPlans.find(p=>p.id===id);if(!plan)return;document.getElementById('planEditDesc').value=plan.description||'';document.getElementById('planEditStatus').value=(plan.status||'created').toLowerCase();document.getElementById('planModal').classList.add('open');}
+
+async function savePlan(){const desc=document.getElementById('planEditDesc').value;const status=document.getElementById('planEditStatus').value;await rpc('plans.update',{id:currentPlanId,description:desc,status});closeModal('planModal');loadPlans();}
+
+function createP0(){document.getElementById('p0Desc').value='';document.getElementById('createP0Modal').classList.add('open');}
+
+async function confirmCreateP0(){const desc=document.getElementById('p0Desc').value;if(!desc.trim())return;await rpc('plans.create',{description:desc});closeModal('createP0Modal');loadPlans();}
+
+async function decomposePlan(id){await rpc('plans.decompose',{id});loadPlans();}
+async function approvePlan(id){await rpc('plans.approve',{id});loadPlans();}
+async function rejectPlan(id){const reason=prompt('Причина отклонения:');if(reason)await rpc('plans.reject',{id,reason});loadPlans();}
+async function archivePlan(id){await rpc('plans.archive',{id});loadPlans();}
+async function deletePlan(id){if(confirm('Удалить план?')){await rpc('plans.delete',{id});loadPlans();}}
+
+// === Connections ===
+async function loadConnections(){const c=await rpc('connections');document.getElementById('connInfo').innerHTML=`<div class="node-detail"><div class="field"><b>Транспорт:</b> ${c.mcp_transport||'stdio'}</div><div class="field"><b>MCP подключён:</b> ${c.mcp_connected?'✅ да':'❌ нет'}</div><div class="field"><b>S0 записей:</b> ${c.s0_entries??'—'}</div><div class="field"><b>Uptime:</b> ${c.uptime_secs??'—'}с</div></div>`;const ws=await rpc('workspaces.list');const list=ws.workspaces||[];document.getElementById('wsList').innerHTML=list.length?`<table><thead><tr><th>ID</th><th>Имя</th><th>Узлов</th><th>Статус</th><th></th></tr></thead><tbody>${list.map(w=>`<tr><td style="font-family:monospace;font-size:11px">${w.id.substring(0,8)}</td><td>${w.name}</td><td>${w.node_count}</td><td>${w.status}</td><td>${w.status!=='Archived'?`<button class="h1 btn" onclick="archiveWorkspace('${w.id}')">Архив</button>`:''}</td></tr>`).join('')}</tbody></table>`:'Нет workspaces';}
+
+async function archiveWorkspace(id){await rpc('workspaces.archive',{id});loadConnections();}
+
+// === Settings ===
+async function loadSettings(){const s=await rpc('settings.get');const llm=s.llm||{};const emb=s.embedding||{};const srv=s.server||{};const mem=s.memory||{};document.getElementById('settingsCard').innerHTML=`
+    <div class="settings-section"><h3>LLM провайдер</h3>
+      <div class="settings-row"><label>Provider</label><select id="set_llm_provider"><option value="openai-compatible"${llm.provider==='openai-compatible'?' selected':''}>openai-compatible</option><option value="openai"${llm.provider==='openai'?' selected':''}>openai</option><option value="disabled"${llm.provider==='disabled'?' selected':''}>disabled</option><option value="mock"${llm.provider==='mock'?' selected':''}>mock</option></select></div>
+      <div class="settings-row"><label>Base URL</label><input id="set_llm_base_url" value="${llm.base_url||''}" placeholder="https://api.openai.com/v1"></div>
+      <div class="settings-row"><label>API Key</label><input id="set_llm_api_key" type="password" value="${llm.api_key||''}" placeholder="sk-..."></div>
+      <div class="settings-row"><label>Model</label><input id="set_llm_model" value="${llm.model||''}" placeholder="gpt-4o-mini"></div>
+      <div class="settings-row"><label>Timeout (сек)</label><input id="set_llm_timeout" type="number" value="${llm.timeout_secs||30}"></div>
+      <div class="settings-row"><label>Temperature</label><input id="set_llm_temp" type="number" step="0.1" value="${llm.temperature||0.7}"></div>
+      <div class="settings-row"><label>Max tokens</label><input id="set_llm_max_tokens" type="number" value="${llm.max_tokens||1000}"></div>
+    </div>
+    <div class="settings-section"><h3>Embeddings</h3>
+      <div class="settings-row"><label>Provider</label><select id="set_emb_provider"><option value="disabled"${emb.provider==='disabled'?' selected':''}>disabled</option><option value="openai"${emb.provider==='openai'?' selected':''}>openai</option><option value="local"${emb.provider==='local'?' selected':''}>local</option></select></div>
+      <div class="settings-row"><label>Base URL</label><input id="set_emb_base_url" value="${emb.base_url||''}"></div>
+      <div class="settings-row"><label>API Key</label><input id="set_emb_api_key" type="password" value="${emb.api_key||''}"></div>
+      <div class="settings-row"><label>Model</label><input id="set_emb_model" value="${emb.model||''}"></div>
+    </div>
+    <div class="settings-section"><h3>Сервер</h3>
+      <div class="settings-row"><label>UI Port</label><input id="set_srv_port" type="number" value="${srv.ui_port||7878}"></div>
+      <div class="settings-row"><label>Log level</label><input id="set_srv_log" value="${srv.log_level||'info'}"></div>
+    </div>
+    <div class="settings-section"><h3>Память</h3>
+      <div class="settings-row"><label>Persistence</label><select id="set_mem_persist"><option value="rocksdb"${mem.persistence==='rocksdb'?' selected':''}>rocksdb</option><option value="file"${mem.persistence==='file'?' selected':''}>file</option></select></div>
+      <div class="settings-row"><label>Consolidation threshold</label><input id="set_mem_thresh" type="number" value="${mem.consolidation_threshold||50}"></div>
+      <div class="settings-row"><label>L0 overlap threshold</label><input id="set_mem_l0" type="number" step="0.01" value="${mem.l0_overlap_threshold||0.05}"></div>
+    </div>
+    <button class="settings-save" onclick="saveSettings()">Сохранить</button>
+    <span id="settingsSaved" style="margin-left:12px"></span>`;}
+
+async function saveSettings(){const s={llm:{provider:val('set_llm_provider'),base_url:val('set_llm_base_url'),api_key:val('set_llm_api_key'),model:val('set_llm_model'),timeout_secs:num('set_llm_timeout'),temperature:parseFloat(val('set_llm_temp')),max_tokens:num('set_llm_max_tokens')},embedding:{provider:val('set_emb_provider'),base_url:val('set_emb_base_url'),api_key:val('set_emb_api_key'),model:val('set_emb_model')},server:{ui_port:num('set_srv_port'),log_level:val('set_srv_log')},memory:{persistence:val('set_mem_persist'),consolidation_threshold:num('set_mem_thresh'),l0_overlap_threshold:parseFloat(val('set_mem_l0'))}};const r=await rpc('settings.set',s);document.getElementById('settingsSaved').innerHTML=r.ok?'<span style="color:#2ea04f">✓ Сохранено</span>':'<span class="error">'+(r.error||'Ошибка')+'</span>';}
+
+function val(id){return document.getElementById(id).value;}
+function num(id){return parseInt(document.getElementById(id).value)||0;}
+
+// === Init ===
+function loadAll(){loadWorkspaces();loadDashboard();}
+connectWS();
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "node .cursor/hooks/graphmind-session-start.mjs"
+      }
+    ],
+    "postToolUse": [
+      {
+        "command": "node .cursor/hooks/graphmind-post-tool-use.mjs",
+        "matcher": "Write|StrReplace|EditNotebook"
+      }
+    ],
+    "stop": [
+      {
+        "command": "node .cursor/hooks/graphmind-session-stop.mjs",
+        "loop_limit": 1
+      }
+    ]
+  }
+}

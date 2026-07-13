@@ -1,0 +1,49 @@
+# GraphMind v2 — общий MCP-сервер памяти (HTTP на :50052) в один запуск.
+#
+#   1) cp config.example.env .env   # и вписать LLM/эмбеддинг-эндпоинты + ключи
+#   2) docker compose up -d --build
+#   3) curl -s http://127.0.0.1:50052/health
+#
+# Подключение агентов (Claude Code/Cursor/Codex/OpenCode/Kodik) — см. README.md.
+services:
+  graphmind:
+    build: .
+    image: graphmind-v2
+    container_name: graphmind
+    restart: unless-stopped
+    # Локальная Ollama на хосте доступна из контейнера по host.docker.internal
+    # (нужно на colima/Linux, где это имя иначе не резолвится).
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:50052/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+    # Порты публикуются на loopback по умолчанию → доступ только с локальной машины
+    # (Free-тир: сколько угодно локальных агентов). Командный/облачный тир — в .env:
+    #   GM_BIND=0.0.0.0
+    #   GRAPHMIND_ALLOW_EXTERNAL=true
+    ports:
+      - "${GM_BIND:-127.0.0.1}:50052:50052"
+      - "${GM_BIND:-127.0.0.1}:7878:7878"
+    environment:
+      # Режим MCP HTTP (иначе бинарь стартует как gRPC :50051)
+      GRAPHMIND_MCP_HTTP: "1"
+      GRAPHMIND_MCP_HTTP_ADDR: "0.0.0.0:50052"
+      GRAPHMIND_PERSISTENCE: "rocksdb"
+      GRAPHMIND_DATA_DIR: "/app/data"
+      # Web UI: биндимся на 0.0.0.0 внутри контейнера, порт проброшен наружу.
+      GRAPHMIND_UI_HOST: "0.0.0.0"
+      GRAPHMIND_UI_PORT: "7878"
+    # LLM/эмбеддинг-эндпоинты и ключи — из .env (не коммитить, .gitignore закрывает .env*).
+    # Внимание: из контейнера localhost — это сам контейнер. Для эмбеддингов на локальной
+    # Ollama укажите host.docker.internal:11434 (или вынесите Ollama отдельным сервисом).
+    env_file:
+      - .env
+    volumes:
+      - graphmind-data:/app/data
+
+volumes:
+  graphmind-data:

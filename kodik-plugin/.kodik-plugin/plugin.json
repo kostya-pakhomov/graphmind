@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "graphmind",
+  "version": "2.0.0",
+  "title": "GraphMind",
+  "description": "Постоянная общая память для ИИ-агентов по MCP: граф знаний с причинными связями, семантический поиск, персист между сессиями. Один агент накопил знание — остальные агенты и люди им пользуются.",
+  "category": "developer-tools",
+  "icon": "./assets/app-icon.svg",
+  "author": {
+    "name": "GraphMind"
+  },
+  "homepageUrl": "https://github.com/topics/graphmind",
+  "sourceUrl": "https://github.com/topics/graphmind",
+  "tags": [
+    "memory",
+    "mcp",
+    "knowledge-graph",
+    "agents",
+    "causal-reasoning"
+  ],
+  "prompts": [
+    "Восстанови контекст проекта из памяти и продолжи работу",
+    "Наведи порядок в памяти проекта: противоречия, пробелы, дубли",
+    "Разбей сложную задачу на план P0/P1/P2/P3 и проведи её до конца"
+  ],
+  "userConfig": {}
+}

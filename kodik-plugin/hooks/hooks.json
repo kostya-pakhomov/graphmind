@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node ./hooks/graphmind-session-start.mjs" }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "edit_file|edit_files",
+        "hooks": [
+          { "type": "command", "command": "node ./hooks/graphmind-post-tool-use.mjs" }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node ./hooks/graphmind-session-stop.mjs" }
+        ]
+      }
+    ]
+  }
+}

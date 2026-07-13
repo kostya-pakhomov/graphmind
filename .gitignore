@@ -1,0 +1,31 @@
+# Rust build artifacts
+/target
+/target2
+**/target
+
+# Runtime data (RocksDB store, S0 pending actions)
+/data
+/graphmind-data
+*.rocksdb
+
+# Local env & secrets — keep the safe example `config.example.env`
+.env
+.env.*
+
+# Build logs & scratch outputs
+*.log
+*_out*.txt
+stderr_diag.txt
+
+# Python helper caches
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
+
+# Legacy Node v1 sources (superseded by Rust graphmind-v2; see mcp/graphmind/.gitignore).
+# These are kept locally for archaeology but must not be tracked in the Rust tree.
+/handler/
+/src/bin/
+
