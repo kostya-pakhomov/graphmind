@@ -13,11 +13,34 @@
 
 Полный каталог инструментов — [`docs/TOOLS.md`](docs/TOOLS.md). Модель данных памяти — [`docs/MEMORY.md`](docs/MEMORY.md).
 
-## Требования сборки
+## Быстрый старт (Docker)
 
-- **Rust** — свежий stable (rustup); сборка проверена на 1.96.
-- **protoc** (protobuf) — генерация Rust из `.proto`
-- **cmake**, **C++-компилятор** (g++/clang), **libclang** — для нативных зависимостей (RocksDB bindgen)
+Готовый образ на Docker Hub — сборка не требуется, C++-компилятор не нужен.
+
+```bash
+cp config.example.env .env   # вписать LLM/эмбеддинг-эндпоинты + ключи
+docker compose up -d
+curl -s http://127.0.0.1:50052/health
+```
+
+Сервер на :50052 (MCP), Web UI на :7878. Том для данных — `graphmind-data`.
+
+**Зависимость от моделей.** Семантический поиск и причинный слой требуют внешних endpoint'ов (OpenAI-совместимый API):
+- **LLM** — любой `/v1/chat/completions` (локальная Ollama/LM Studio, vLLM, любой OpenAI-совместимый endpoint).
+- **Эмбеддинги** — отдельный `/v1/embeddings`: локальная Ollama `bge-m3` (1024d, многоязычная) или любой OpenAI-совместимый endpoint. `GRAPHMIND_EMBEDDING_DIM` должен совпадать с моделью (bge-m3 → 1024).
+
+Без LLM/эмбеддингов сервер поднимется, но поиск деградирует до ключевых слов, а причинный слой — до эвристики.
+
+### Сборка из исходников
+
+Если нужна сборка из исходников (вместо готового образа):
+
+```bash
+cargo build --release --features mcp-server,rocksdb
+# бинарь: target/release/graphmind-v2
+```
+
+Требования: Rust stable, `protoc`, `cmake`, C++-компилятор (g++/clang), `libclang` (для RocksDB bindgen).
 
 ```bash
 # macOS
@@ -26,38 +49,9 @@ brew install rustup protobuf cmake      # libclang идёт с Xcode CommandLine
 sudo apt-get install -y protobuf-compiler g++ cmake clang libclang-dev
 ```
 
-## Быстрый старт
-
-### 1. Сборка
-
-```bash
-cargo build --release --features mcp-server,rocksdb
-# бинарь: target/release/graphmind-v2
-```
-
-`rocksdb` даёт персист; без фичи бэкенд файловый. `mcp-server` включён по умолчанию.
-
-### 2. Конфиг
-
-Бинарь читает `.env` **рядом с собой** (dotenvy из каталога бинаря, не из cwd) — положите `.env` в `target/release/`. За основу возьмите `config.example.env` — в нём рабочие примеры для локальной Ollama/LM Studio и полностью офлайн-режима (`cp config.example.env .env` и впишите свои endpoint'ы + ключи).
-
-**Зависимость от моделей.** Семантический поиск и причинный слой требуют внешних endpoint'ов (OpenAI-совместимый API):
-- **LLM** — любой `/v1/chat/completions` (локальная Ollama/LM Studio, vLLM, любой OpenAI-совместимый endpoint).
-- **Эмбеддинги** — отдельный `/v1/embeddings`: локальная Ollama `bge-m3` (1024d, многоязычная) или любой OpenAI-совместимый endpoint. `GRAPHMIND_EMBEDDING_DIM` должен совпадать с моделью (bge-m3 → 1024).
-
-Без LLM/эмбеддингов сервер поднимется, но поиск деградирует до ключевых слов, а причинный слой — до эвристики.
-
-### 3. Запуск (HTTP-сервер MCP)
-
-```bash
-GRAPHMIND_MCP_HTTP=1 ./target/release/graphmind-v2
-# слушает 0.0.0.0:50052 (переопределить: GRAPHMIND_MCP_HTTP_ADDR)
-curl -s http://127.0.0.1:50052/health
-```
+Бинарь читает `.env` **рядом с собой** (dotenvy из каталога бинаря, не из cwd) — положите `.env` в `target/release/`.
 
 Транспорты одного сервера: `POST /mcp` (Streamable HTTP — Cursor/Codex/OpenCode), `GET /sse` + `/message` (Claude Code), а также **stdio** (без `GRAPHMIND_MCP_HTTP`). Модель работы — **один HTTP-сервер владеет данными, много клиентов** (RocksDB держит эксклюзивный lock на data_dir, поэтому два серверных процесса на одну папку поднять нельзя).
-
-Turnkey в контейнере — [`docker-compose.yml`](docker-compose.yml): `docker compose up -d` (сервер на :50052, том для данных, env из `.env`).
 
 ## Подключить агента
 

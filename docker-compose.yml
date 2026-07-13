@@ -1,14 +1,13 @@
 # GraphMind v2 — общий MCP-сервер памяти (HTTP на :50052) в один запуск.
 #
 #   1) cp config.example.env .env   # и вписать LLM/эмбеддинг-эндпоинты + ключи
-#   2) docker compose up -d --build
+#   2) docker compose up -d
 #   3) curl -s http://127.0.0.1:50052/health
 #
 # Подключение агентов (Claude Code/Cursor/Codex/OpenCode/Kodik) — см. README.md.
 services:
   graphmind:
-    build: .
-    image: graphmind-v2
+    image: romanzhdanov99/graphmind:latest
     container_name: graphmind
     restart: unless-stopped
     # Локальная Ollama на хосте доступна из контейнера по host.docker.internal
